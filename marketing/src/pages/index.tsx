@@ -19,10 +19,10 @@ import { TwitterTweetEmbed } from 'react-twitter-embed'
 import Header from '~/components/marketing/Header'
 import { btnClass } from '~/styling'
 
-export default function Index({ fathom }: { fathom: any }) {
+export default function Index() {
   return (
     <>
-      <Header fathom={fathom} />
+      <Header />
       <div>
         <div className="w-full md:w-1/2 relative aspect-video mx-auto shadow-[0_3px_40px_5px_rgba(0,0,0,0.3)] shadow-purple-600 -mt-8 md:mt-0">
           <Image alt="Screenshot of giveaway-o-tron" src="/images/screenshot.png" className="shadow-lg" layout="fill" />

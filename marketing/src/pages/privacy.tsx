@@ -1,9 +1,9 @@
 import Header from '~/components/marketing/Header'
 
-export default function Privacy({ fathom }: any) {
+export default function Privacy() {
   return (
     <div className="pt-4 pb-10 max-w-6xl mx-auto">
-      <Header fathom={fathom} />
+      <Header />
       <style jsx>{`
         h2 {
           font-size: 2rem;

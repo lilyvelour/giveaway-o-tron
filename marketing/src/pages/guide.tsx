@@ -2,10 +2,10 @@ import ChatTester from '~/components/marketing/ChatTester'
 import Header from '~/components/marketing/Header'
 import { btnClass } from '~/styling'
 
-export default function Guide({ fathom }: { fathom: any }) {
+export default function Guide() {
   return (
     <>
-      <Header fathom={fathom} />
+      <Header />
       <div className="py-2 flex flex-col gap-8 justify-center items-center mx-auto text-center -mt-20 max-w-xl">
         <h1 className="text-6xl font-bold mb-4">Guide</h1>
         <div className="flex flex-row gap-4 justify-center items-center">
