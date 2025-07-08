@@ -1,6 +1,6 @@
 const title = 'Giveaway-o-tron | OBS Overlays'
 const description = 'OBS Overlays for use with Giveaway-o-tron.'
-const url = 'https://mael.tech/'
+const url = ''
 
 export default {
   title,

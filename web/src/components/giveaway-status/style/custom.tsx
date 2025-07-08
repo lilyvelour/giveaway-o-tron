@@ -9,9 +9,22 @@ export default function CustomStatus({ status, title, body, imageUrl }: StatusPr
         status ? (status === 'start' ? 'animate-in fade-in' : '') : 'animate-out fade-out'
       }`}
     >
-      {imageUrl ? <img src={imageUrl} className="h-72" /> : null}
-      <div className="text-5xl my-3">{title}</div>
-      <div className="text-4xl">{body}</div>
+      {imageUrl ? <img src={imageUrl} className="h-56" /> : null}
+      <div style={{ position: 'relative', top: '-14.4vh', left: '4vw' }}>
+        <div className="text-6xl font-semibold my-3">{title}</div>
+      </div>
+      <div
+        style={{
+          position: 'relative',
+          top: '-8vh',
+          left: '1.6vw',
+          maxWidth: '50vw',
+          minHeight: '50vh',
+          overflow: 'auto',
+        }}
+      >
+        <div className="text-5xl font-semibold">{body}</div>
+      </div>
     </div>
   )
 }

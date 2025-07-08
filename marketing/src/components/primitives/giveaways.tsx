@@ -6,7 +6,7 @@ import cls from 'classnames'
 import { ChatItem } from '../../chat'
 import {
   Settings as TSettings,
-  getInstantGiveaway,
+  /* getInstantGiveaway, */
   getChatGiveaway,
   ChannelInfo,
   GiveawayResult,
@@ -29,76 +29,72 @@ function filterSettings(s: TSettings) {
   }
 }
 
-export function InstantGiveaway({
-  setWinners,
-  channelInfo,
-  discordSettings,
-  settings,
-  client,
-  setPastGiveaways,
-  forfeits,
-  getPatreons,
-}: {
-  setWinners: Dispatch<SetStateAction<WinnerUser[]>>
-  channelInfo: ChannelInfo
-  discordSettings: DiscordSettings
-  settings: TSettings
-  client: ReturnType<typeof chat> | null
-  setPastGiveaways: Dispatch<SetStateAction<GiveawayResult[]>>
-  forfeits: string[]
-  getPatreons: () => Promise<Set<string>>
-}) {
-  const [thinking, setThinking] = React.useState(false)
-  return (
-    <button
-      title="A giveaway that includes all viewers, regardless of if they've chatted or not"
-      className="bg-purple-600 px-2 py-4 text-white rounded-md mt-2 overflow-hidden flex flex-row items-center justify-center text-center gap-1 flex-1 select-none transform transition-all hover:translate-y-0.5 hover:scale-95 hover:bg-purple-700"
-      onClick={async () => {
-        if (!channelInfo.login) return
-        try {
-          setThinking(true)
-          const patreons = await getPatreons().catch(() => new Set<string>())
-          const { winners: giveawayWinner, giveawayStats } = await getInstantGiveaway(
-            client,
-            channelInfo,
-            settings,
-            discordSettings,
-            forfeits,
-            patreons
-          )
-          if (!giveawayWinner.length) {
-            toast.error('No winners found that match conditions!', {
-              position: 'bottom-center',
-              style: { fontSize: '1rem', padding: '0.2rem' },
-            })
-            return
-          }
-          setWinners((w) => w.concat(giveawayWinner.map((u) => ({ username: u.login, platform: u.platform }))))
-          setPastGiveaways((p) =>
-            (
-              [
-                {
-                  type: GiveawayType.Instant,
-                  createdAt: new Date().toISOString(),
-                  winners: giveawayWinner,
-                  settings: filterSettings(settings),
-                  giveawayStats,
-                  notes: '',
-                },
-              ] as GiveawayResult[]
-            )
-              .concat(p)
-              .slice(-25)
-          )
-        } finally {
-          setThinking(false)
-        }
-      }}
-    >
-      {thinking ? <FaSpinner className="animate-spin" /> : <FaDice className="text-2xl" />} Viewers Instant Giveaway
-    </button>
-  )
-}
+// export function InstantGiveaway({
+//   setWinners,
+//   channelInfo,
+//   discordSettings,
+//   settings,
+//   client,
+//   setPastGiveaways,
+//   forfeits,
+// }: {
+//   setWinners: Dispatch<SetStateAction<WinnerUser[]>>
+//   channelInfo: ChannelInfo
+//   discordSettings: DiscordSettings
+//   settings: TSettings
+//   client: ReturnType<typeof chat> | null
+//   setPastGiveaways: Dispatch<SetStateAction<GiveawayResult[]>>
+//   forfeits: string[]
+// }) {
+//   const [thinking, setThinking] = React.useState(false)
+//   return (
+//     <button
+//       title="A giveaway that includes all viewers, regardless of if they've chatted or not"
+//       className="bg-purple-600 px-2 py-4 text-white rounded-md mt-2 overflow-hidden flex flex-row items-center justify-center text-center gap-1 flex-1 select-none transform transition-all hover:translate-y-0.5 hover:scale-95 hover:bg-purple-700"
+//       onClick={async () => {
+//         if (!channelInfo.login) return
+//         try {
+//           setThinking(true)
+//           const { winners: giveawayWinner, giveawayStats } = await getInstantGiveaway(
+//             client,
+//             channelInfo,
+//             settings,
+//             discordSettings,
+//             forfeits
+//           )
+//           if (!giveawayWinner.length) {
+//             toast.error('No winners found that match conditions!', {
+//               position: 'bottom-center',
+//               style: { fontSize: '1rem', padding: '0.2rem' },
+//             })
+//             return
+//           }
+//           setWinners((w) => w.concat(giveawayWinner.map((u) => ({ username: u.login, platform: u.platform }))))
+//           setPastGiveaways((p) =>
+//             (
+//               [
+//                 {
+//                   type: GiveawayType.Instant,
+//                   createdAt: new Date().toISOString(),
+//                   winners: giveawayWinner,
+//                   settings: filterSettings(settings),
+//                   giveawayStats,
+//                   notes: '',
+//                 },
+//               ] as GiveawayResult[]
+//             )
+//               .concat(p)
+//               .slice(-25)
+//           )
+//         } finally {
+//           setThinking(false)
+//         }
+//       }}
+//     >
+//       {thinking ? <FaSpinner className="animate-spin" /> : <FaDice className="text-2xl" />} Viewers Instant Giveaway
+//     </button>
+//   )
+// }
 
 export function ChatGiveaway({
   chatEvents,
@@ -109,7 +105,6 @@ export function ChatGiveaway({
   client,
   setPastGiveaways,
   forfeits,
-  getPatreons,
 }: {
   chatEvents: ChatItem[]
   setWinners: Dispatch<SetStateAction<WinnerUser[]>>
@@ -119,7 +114,6 @@ export function ChatGiveaway({
   client: ReturnType<typeof chat> | null
   setPastGiveaways: Dispatch<SetStateAction<GiveawayResult[]>>
   forfeits: string[]
-  getPatreons: () => Promise<Set<string>>
 }) {
   const [thinking, setThinking] = React.useState(false)
   return (
@@ -129,7 +123,6 @@ export function ChatGiveaway({
       onClick={async () => {
         try {
           setThinking(true)
-          const patreons = await getPatreons().catch(() => new Set<string>())
           const { winners: giveawayWinner, giveawayStats } = await getChatGiveaway(
             client,
             channelInfo,
@@ -137,8 +130,7 @@ export function ChatGiveaway({
             settings.chatCommand,
             settings,
             discordSettings,
-            forfeits,
-            patreons
+            forfeits
           )
           if (!giveawayWinner.length) {
             toast.error('No winners found that match conditions!', {

@@ -6,7 +6,6 @@ import { ChatItem } from '~/chat'
 import { YOUTUBE_STORAGE_KEYS, safeYoutubeFetch } from '~/utils/google'
 import { useRecursiveTimeout } from './useRecursiveTimeout'
 import toast from 'react-hot-toast'
-import { useBeta } from './useBeta'
 import isAfter from 'date-fns/isAfter'
 
 interface YoutubeStream {
@@ -99,7 +98,6 @@ function updateChat(chatItems: ChatItem[]) {
 
 export function useYoutubeChat(setChat: React.Dispatch<React.SetStateAction<ChatItem[]>>) {
   const session = useSession()
-  const inBeta = useBeta()
   const [youtubeStream, setYoutubeStream] = useState<YoutubeStream>()
 
   const [broadcastDelay, setBroadcastDelay] = useState<null | number>(1_000)
@@ -108,8 +106,6 @@ export function useYoutubeChat(setChat: React.Dispatch<React.SetStateAction<Chat
   useRecursiveTimeout(
     '[youtube][broadcast]',
     async () => {
-      if (!inBeta) return
-
       const streamInfo = await getFirstBroadcast(session.data?.youtube?.accessToken)
       setYoutubeStream(streamInfo)
       if (streamInfo && streamInfo.chatId) {
@@ -129,8 +125,6 @@ export function useYoutubeChat(setChat: React.Dispatch<React.SetStateAction<Chat
   useRecursiveTimeout(
     '[youtube][chat]',
     async () => {
-      if (!inBeta) return
-
       if (youtubeStream?.chatId && session?.data?.youtube?.accessToken) {
         console.info('[youtube][chat]', 'Start', chatDelay)
         const { chatItems, delay } = await getAndSetYoutubeChat(
@@ -150,8 +144,6 @@ export function useYoutubeChat(setChat: React.Dispatch<React.SetStateAction<Chat
 
   const getYoutubeChat = useCallback(async () => {
     try {
-      if (!inBeta) return
-
       if (youtubeStream?.chatId && session?.data?.youtube?.accessToken) {
         const { chatItems } = await getAndSetYoutubeChat(session?.data?.youtube?.accessToken, youtubeStream?.chatId)
         if (chatItems) {
@@ -168,7 +160,7 @@ export function useYoutubeChat(setChat: React.Dispatch<React.SetStateAction<Chat
     } catch (e) {
       console.info('[youtube][chat][error]', e)
     }
-  }, [session?.data?.youtube?.accessToken, youtubeStream, setChat, inBeta])
+  }, [session?.data?.youtube?.accessToken, youtubeStream, setChat])
 
   return {
     getChat: getYoutubeChat,

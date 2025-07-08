@@ -4,7 +4,6 @@ import { useRouter } from 'next/router'
 import { io } from 'socket.io-client'
 import toast, { Toaster } from 'react-hot-toast'
 import ReactCanvasConfetti from 'react-canvas-confetti'
-import { getRelayURI } from '../util'
 import { CustomAlert, Gw2Alert } from './style'
 
 const canvasStyles = {
@@ -19,7 +18,6 @@ const canvasStyles = {
 export default function GW2Alerts() {
   const router = useRouter()
   const channel = router.query.channel
-  const relayVersion = router.query.rv
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const refAnimationInstance = React.useRef<any>(null)
 
@@ -76,7 +74,7 @@ export default function GW2Alerts() {
   )
   React.useEffect(() => {
     if (!channel) return
-    const socket = io(getRelayURI(relayVersion), {
+    const socket = io(process.env.NEXT_PUBLIC_RELAY_URI || '', {
       query: { channel },
       transports: ['websocket', 'polling'],
     })
@@ -107,7 +105,7 @@ export default function GW2Alerts() {
         }
       }
     }
-  }, [handleEvent, relayVersion, channel])
+  }, [handleEvent, channel])
   React.useEffect(() => {
     new Image().src = '/images/gw2/notification.png'
     new Image().src = '/images/gw2-aurene/notification.png'

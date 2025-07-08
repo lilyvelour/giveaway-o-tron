@@ -29,19 +29,19 @@ async function callTwitchApi(channelInfo: ChannelInfo, path: string, isRefresh: 
   return callWithInfo('https://api.twitch.tv/helix/', channelInfo, path, isRefresh)
 }
 
-export async function getViewers(channelInfo: ChannelInfo) {
-  return fetch(`https://discord-slash-commands.vercel.app/api/twitch-chatters?channel=${channelInfo.login}`)
-    .then<ChattersApiData>((res) => res.json())
-    .then((d) =>
-      d.chatters.viewers
-        .concat(d.chatters.moderators)
-        .concat(d.chatters.vips)
-        .concat(d.chatters.admins)
-        .concat(d.chatters.staff)
-        .concat(d.chatters.global_mods)
-        .filter((n) => !BOTS.includes(n))
-    )
-}
+// export async function getViewers(channelInfo: ChannelInfo) {
+//   return fetch(`https://discord-slash-commands.vercel.app/api/twitch-chatters?channel=${channelInfo.login}`)
+//     .then<ChattersApiData>((res) => res.json())
+//     .then((d) =>
+//       d.chatters.viewers
+//         .concat(d.chatters.moderators)
+//         .concat(d.chatters.vips)
+//         .concat(d.chatters.admins)
+//         .concat(d.chatters.staff)
+//         .concat(d.chatters.global_mods)
+//         .filter((n) => !BOTS.includes(n))
+//     )
+// }
 
 let dumbFollowersCache = new Map()
 export async function getFollowers(channelInfo: ChannelInfo) {

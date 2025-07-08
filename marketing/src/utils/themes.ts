@@ -19,7 +19,7 @@ export function useThemes() {
     ;(async () => {
       try {
         setLoading(true)
-        const fetchedThemes = await fetch('https://giveaway-o-tron.vercel.app/themes.json').then((r) => r.json())
+        const fetchedThemes = await fetch('http://localhost:3001/themes.json').then((r) => r.json())
         if (fetchedThemes.length > 2) {
           console.info('[themes:get:data]', fetchedThemes)
           setThemes(fetchedThemes)

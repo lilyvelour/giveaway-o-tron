@@ -12,7 +12,6 @@ import { AreaChart, XAxis, YAxis, Tooltip, Area, ResponsiveContainer } from 'rec
 import format from 'date-fns/format'
 import { CacheHistory, CacheStats } from '~/utils'
 import cls from 'classnames'
-import { useBeta } from '../hooks/useBeta'
 import useSession from '../hooks/useSession'
 import toast from 'react-hot-toast'
 import { YOUTUBE_STORAGE_KEYS } from '~/utils/google'
@@ -64,11 +63,10 @@ function StatusIcon({ status, lastUpdated }: Pick<CacheStats['twitchfollowers'],
 
 export default function Stats({ stats, cacheHistory }: { stats: CacheStats; cacheHistory: CacheHistory }) {
   const [fullView, setFullView] = React.useState(false)
-  const isBeta = useBeta()
   const session = useSession()
   return (
     <>
-      {fullView ? <FullView stats={stats} cacheHistory={cacheHistory} isBeta={isBeta} /> : null}
+      {fullView ? <FullView stats={stats} cacheHistory={cacheHistory} /> : null}
       <div
         className={`flex flex-row gap-6 mt-2 mx-3 text-xs justify-center items-center ${
           fullView ? 'opacity-100' : 'opacity-60'
@@ -88,19 +86,18 @@ export default function Stats({ stats, cacheHistory }: { stats: CacheStats; cach
           <ProgressBar platform="twitch" {...stats.twitchsubs} />
           <StatusIcon status={stats.twitchsubs.status} lastUpdated={stats.twitchsubs.lastUpdated} />
         </div>
-        {isBeta ? (
-          <>
-            <div className="flex flex-row gap-2 justify-center items-center flex-1">
-              <div className="bg-red-600 rounded-md text-center px-2 py-0.5 flex flex-row gap-1 justify-center items-center">
-                <FaYoutube /> Subscribers
-              </div>
-              <ProgressBar platform="youtube" {...stats.youtubefollowers} />
-              <StatusIcon
-                status={!session?.data?.youtube ? 'error' : stats.youtubefollowers.status}
-                lastUpdated={stats.youtubefollowers.lastUpdated}
-              />
+        <>
+          <div className="flex flex-row gap-2 justify-center items-center flex-1">
+            <div className="bg-red-600 rounded-md text-center px-2 py-0.5 flex flex-row gap-1 justify-center items-center">
+              <FaYoutube /> Subscribers
             </div>
-            <div className="flex flex-row gap-2 justify-center items-center flex-1">
+            <ProgressBar platform="youtube" {...stats.youtubefollowers} />
+            <StatusIcon
+              status={!session?.data?.youtube ? 'error' : stats.youtubefollowers.status}
+              lastUpdated={stats.youtubefollowers.lastUpdated}
+            />
+          </div>
+          {/* <div className="flex flex-row gap-2 justify-center items-center flex-1">
               <div className="bg-red-600 rounded-md text-center px-2 py-0.5 flex flex-row gap-1 justify-center items-center">
                 <FaYoutube /> Members
               </div>
@@ -109,25 +106,22 @@ export default function Stats({ stats, cacheHistory }: { stats: CacheStats; cach
                 status={!session?.data?.youtube ? 'error' : stats.youtubesubs.status}
                 lastUpdated={stats.youtubesubs.lastUpdated}
               />
-            </div>
-          </>
-        ) : null}
-        {isBeta ? (
-          <button
-            className="bg-red-600 py-1 px-2 rounded-md flex flex-row gap-1 justify-center items-center"
-            onClick={() => {
-              console.info('[youtube] Forcing full sub sync')
-              toast.success('Forcing full subscription sync', {
-                position: 'bottom-right',
-                style: { fontSize: '0.8rem', padding: '0.2rem' },
-              })
-              localStorage.removeItem(YOUTUBE_STORAGE_KEYS.LastSubKey)
-              localStorage.setItem(YOUTUBE_STORAGE_KEYS.ForceSubs, 'true')
-            }}
-          >
-            <FaYoutube /> Force Sync
-          </button>
-        ) : null}
+            </div> */}
+        </>
+        <button
+          className="bg-red-600 py-1 px-2 rounded-md flex flex-row gap-1 justify-center items-center"
+          onClick={() => {
+            console.info('[youtube] Forcing full sub sync')
+            toast.success('Forcing full subscription sync', {
+              position: 'bottom-right',
+              style: { fontSize: '0.8rem', padding: '0.2rem' },
+            })
+            localStorage.removeItem(YOUTUBE_STORAGE_KEYS.LastSubKey)
+            localStorage.setItem(YOUTUBE_STORAGE_KEYS.ForceSubs, 'true')
+          }}
+        >
+          <FaYoutube /> Force Sync
+        </button>
         <button className="bg-purple-600 p-1 rounded-md" onClick={() => setFullView((v) => !v)}>
           {fullView ? <FaAngleDown /> : <FaAngleUp />}
         </button>
@@ -145,7 +139,7 @@ function graphOrEmpty(items: any[]) {
   return items.length === 0 ? EMPTY_GRAPH : items
 }
 
-function FullView({ stats, cacheHistory, isBeta }: { stats: CacheStats; cacheHistory: CacheHistory; isBeta: Boolean }) {
+function FullView({ stats, cacheHistory }: { stats: CacheStats; cacheHistory: CacheHistory }) {
   return (
     <div className="bg-gray-700 flex-2 mt-2 rounded-md px-3 pt-3 flex flex-col gap-2">
       <div className="flex flex-col gap-2 flex-1">
@@ -202,52 +196,51 @@ function FullView({ stats, cacheHistory, isBeta }: { stats: CacheStats; cacheHis
           </div>
         </div>
       </div>
-      {isBeta ? (
-        <div className="flex flex-col gap-2 flex-1">
-          <div className="text-sm flex flex-row justify-center items-center gap-2">
-            <div className="flex flex-row gap-2 justify-center items-center flex-1">
-              <div className="bg-red-600 rounded-md text-center px-2 py-0.5 flex flex-row gap-1 justify-center items-center">
-                <FaYoutube /> Subscribers {Intl.NumberFormat().format(stats.youtubefollowers.count)} /{' '}
-                {Intl.NumberFormat().format(Math.max(stats.youtubefollowers.total, stats.youtubefollowers.count))}{' '}
-              </div>
+      <div className="flex flex-col gap-2 flex-1">
+        <div className="text-sm flex flex-row justify-center items-center gap-2">
+          <div className="flex flex-row gap-2 justify-center items-center flex-1">
+            <div className="bg-red-600 rounded-md text-center px-2 py-0.5 flex flex-row gap-1 justify-center items-center">
+              <FaYoutube /> Subscribers {Intl.NumberFormat().format(stats.youtubefollowers.count)} /{' '}
+              {Intl.NumberFormat().format(Math.max(stats.youtubefollowers.total, stats.youtubefollowers.count))}{' '}
             </div>
-            <div className="flex flex-row gap-2 justify-center items-center flex-1">
+          </div>
+          {/* <div className="flex flex-row gap-2 justify-center items-center flex-1">
               <div className="bg-red-600 rounded-md text-center px-2 py-0.5 flex flex-row gap-1 justify-center items-center">
                 <FaYoutube /> Members {Intl.NumberFormat().format(stats.youtubesubs.count)} /{' '}
                 {Intl.NumberFormat().format(Math.max(stats.youtubesubs.total, stats.youtubesubs.count))}
               </div>
+            </div> */}
+        </div>
+        <div className="opacity-60 flex flex-row text-xs -mt-1 justify-center items-center gap-2">
+          <div className="flex flex-row gap-2 justify-center items-center flex-1">
+            <div className="rounded-md text-center">
+              Last Updated:{' '}
+              {stats.youtubefollowers.lastUpdated
+                ? format(stats.youtubefollowers.lastUpdated, 'dd/MM/yy hh:mm')
+                : '??/??/?? ??:??'}
             </div>
           </div>
-          <div className="opacity-60 flex flex-row text-xs -mt-1 justify-center items-center gap-2">
-            <div className="flex flex-row gap-2 justify-center items-center flex-1">
-              <div className="rounded-md text-center">
-                Last Updated:{' '}
-                {stats.youtubefollowers.lastUpdated
-                  ? format(stats.youtubefollowers.lastUpdated, 'dd/MM/yy hh:mm')
-                  : '??/??/?? ??:??'}
-              </div>
-            </div>
-            <div className="flex flex-row gap-2 justify-center items-center flex-1">
-              <div className="rounded-md text-center">
-                Last Updated:{' '}
-                {stats.youtubesubs.lastUpdated
-                  ? format(stats.youtubesubs.lastUpdated, 'dd/MM/yy hh:mm')
-                  : '??/??/?? ??:??'}
-              </div>
+          <div className="flex flex-row gap-2 justify-center items-center flex-1">
+            <div className="rounded-md text-center">
+              Last Updated:{' '}
+              {stats.youtubesubs.lastUpdated
+                ? format(stats.youtubesubs.lastUpdated, 'dd/MM/yy hh:mm')
+                : '??/??/?? ??:??'}
             </div>
           </div>
-          <div className="flex-1 flex flex-row justify-center items-center gap-2">
-            <div className="flex-1 h-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={graphOrEmpty(cacheHistory.youtubeFollowers.slice(-30))}>
-                  <XAxis dataKey="time" />
-                  <YAxis min={0} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Area dataKey="count" stroke="#dc2626" fill="#dc2626" fillOpacity={0.1} />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="flex-1 h-full">
+        </div>
+        <div className="flex-1 flex flex-row justify-center items-center gap-2">
+          <div className="flex-1 h-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={graphOrEmpty(cacheHistory.youtubeFollowers.slice(-30))}>
+                <XAxis dataKey="time" />
+                <YAxis min={0} />
+                <Tooltip content={<CustomTooltip />} />
+                <Area dataKey="count" stroke="#dc2626" fill="#dc2626" fillOpacity={0.1} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+          {/* <div className="flex-1 h-full">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={graphOrEmpty(cacheHistory.youtubeSubs.slice(-30))}>
                   <XAxis dataKey="time" />
@@ -256,10 +249,9 @@ function FullView({ stats, cacheHistory, isBeta }: { stats: CacheStats; cacheHis
                   <Area dataKey="count" stroke="#dc2626" fill="#dc2626" fillOpacity={0.1} />
                 </AreaChart>
               </ResponsiveContainer>
-            </div>
-          </div>
+            </div> */}
         </div>
-      ) : null}
+      </div>
       <div className="text-xs opacity-40 text-center relative -top-2 -mt-2">
         These numbers may appear high, as unfollows/unsubs aren't tracked
       </div>

@@ -11,14 +11,11 @@ import {
 } from '../../utils'
 import chat from '../../chat'
 import Settings from '../primitives/Settings'
-import { Winner, InstantGiveaway, ChatGiveaway, WinnerUser } from '../primitives/giveaways'
+import { Winner, /*InstantGiveaway,*/ ChatGiveaway, WinnerUser } from '../primitives/giveaways'
 import ChatBox, { ChatControls } from '../primitives/ChatBox'
 import formatDuration from 'date-fns/formatDuration'
 import Stats from '../primitives/Stats'
-import MukSettings from '../primitives/MukSettings'
 import useCheckTwitchScopes from '../hooks/useCheckTwitchScopes'
-import YoutubeWelcomeModal from '../primitives/YoutubeWelcomeModal'
-import usePatreons from '../hooks/usePatreons'
 
 export default function MainScreen({
   chatEvents,
@@ -68,10 +65,8 @@ export default function MainScreen({
     }).replace(' seconds', 's')} delay`
   }, [chatEvents])
   useCheckTwitchScopes(channelInfo)
-  const { patreons, getPatreons } = usePatreons()
   return (
     <div className="flex flex-col flex-1">
-      <YoutubeWelcomeModal />
       <Winner
         winners={winners}
         onClear={(idx) => setWinners((w) => removeIdx(w, idx))}
@@ -81,7 +76,7 @@ export default function MainScreen({
         channelInfo={channelInfo}
       />
       <div className="flex flex-row gap-2">
-        <InstantGiveaway
+        {/* <InstantGiveaway
           discordSettings={discordSettings}
           settings={settings}
           channelInfo={channelInfo}
@@ -89,8 +84,7 @@ export default function MainScreen({
           client={client}
           setPastGiveaways={setPastGiveaways}
           forfeits={forfeits}
-          getPatreons={getPatreons}
-        />
+        /> */}
         <ChatGiveaway
           discordSettings={discordSettings}
           settings={settings}
@@ -100,15 +94,8 @@ export default function MainScreen({
           client={client}
           setPastGiveaways={setPastGiveaways}
           forfeits={forfeits}
-          getPatreons={getPatreons}
         />
       </div>
-      <MukSettings
-        discordSettings={discordSettings}
-        settings={settings}
-        chatClient={client}
-        channelInfo={channelInfo}
-      />
       <Settings
         channelId={channelInfo.userId}
         settings={settings}
@@ -140,7 +127,6 @@ export default function MainScreen({
           getYoutubeChat={getYoutubeChat}
           setYoutubeChatDelay={setYoutubeChatDelay}
           youtubeChatDelay={youtubeChatDelay}
-          patreons={patreons}
         />
       )}
       <Stats stats={stats} cacheHistory={cacheHistory} />

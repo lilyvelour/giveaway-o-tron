@@ -25,7 +25,6 @@
     ]
   },
   "dependencies": {
-    "@sentry/nextjs": "^7.12.1",
     "add": "^2.0.6",
     "auto-text-size": "^0.1.2",
     "fathom-client": "^3.4.1",

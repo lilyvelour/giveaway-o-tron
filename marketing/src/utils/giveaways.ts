@@ -1,7 +1,7 @@
 import { Chat, ChatItem } from '../chat'
 import { ChannelInfo, DiscordSettings, GiveawayResult, Settings } from './types'
 import { getDiscordColour, getRandomArrayItem, handleChatCommand } from './misc'
-import { getFollowers, getSubs, getViewers } from './twitch'
+import { getFollowers, getSubs } from './twitch'
 import relay from './relay'
 import toast from 'react-hot-toast'
 
@@ -45,15 +45,19 @@ type GiveawayInformation = Promise<{
   giveawayStats: GiveawayResult['giveawayStats']
 }>
 
-function isSubscriber(item: ChatItem, youtubeSubs: Map<any, any>, patreons: Set<string>) {
+function isSubscriber(item: ChatItem, youtubeSubs: Map<any, any>) {
   if (item.source === 'twitch') {
-    return item.isSubscriber || patreons.has(`${item.id}`)
+    return item.isSubscriber
   }
   return youtubeSubs?.has(item.username)
 }
 
 async function fakeCache() {
   return new Map()
+}
+
+export function resetPastWinners() {
+  pastWinners.clear()
 }
 
 export async function getChatGiveaway(
@@ -63,8 +67,7 @@ export async function getChatGiveaway(
   chatCommand: string,
   settings: Settings,
   discordSettings: DiscordSettings,
-  forfeits: string[],
-  patreons: Set<string>
+  forfeits: string[]
 ): Promise<GiveawayInformation> {
   const forfeitSet = new Set([...forfeits])
   const matchMap = new Map<string, Set<string>>()
@@ -112,9 +115,9 @@ export async function getChatGiveaway(
   if (settings.followersOnly) {
     users = filteredFollowers
   }
-  giveawayUserStats.subs = users.filter((u) => isSubscriber(u, youtubeSubs, patreons)).length
+  giveawayUserStats.subs = users.filter((u) => isSubscriber(u, youtubeSubs)).length
   users = users.flatMap((c) => {
-    if (isSubscriber(c, youtubeSubs, patreons)) {
+    if (isSubscriber(c, youtubeSubs)) {
       subCount += 1
       subEntries += settings.subLuck
       return Array.from({ length: settings.subLuck }, () => c)
@@ -154,77 +157,76 @@ export async function getChatGiveaway(
   }
 }
 
-export async function getInstantGiveaway(
-  chatClient: Chat,
-  channelInfo: ChannelInfo,
-  settings: Settings,
-  discordSettings: DiscordSettings,
-  forfeits: string[],
-  patreons: Set<string>
-): Promise<GiveawayInformation> {
-  const forfeitSet = new Set([...forfeits])
-  const giveawayUserStats = prepareStats()
-  console.info('[giveaway][instant][start]')
-  let viewers = await getViewers(channelInfo)
-  viewers = viewers.filter((u) => !settings.blocklist.map((b) => b.trim()).includes(u))
-  console.info({ viewers: viewers.length })
-  const [followersList, subsList] = await Promise.all([getFollowers(channelInfo), getSubs(channelInfo)])
-  giveawayUserStats.users = viewers.length
-  giveawayUserStats.entries = viewers.length
-  let mappedViewers = viewers.map((v) => ({
-    login: v,
-    follows: followersList!.has(v),
-    isSubscriber: subsList!.has(v),
-    source: 'instant',
-    platform: 'twitch',
-  }))
-  let filteredFollowers = mappedViewers.filter((v) => v.follows)
-  let filteredSubs = mappedViewers.filter((v) => v.isSubscriber)
-  giveawayUserStats.followers = filteredFollowers.length
-  giveawayUserStats.subs = filteredSubs.length
-  if (settings.followersOnly) {
-    mappedViewers = filteredFollowers
-  }
-  viewers = mappedViewers
-    .flatMap((c) => {
-      if (c.isSubscriber) {
-        return Array.from({ length: settings.subLuck }, () => c)
-      }
-      return c
-    })
-    .map((i) => i.login)
-  giveawayUserStats.finalEntries = viewers.length
-  console.info('[giveaway][instant]', giveawayUserStats)
-  giveawayUserStats.toast()
-  console.info('[giveaway][instant][end]')
-  const winners = Array.from({ length: settings.numberOfWinners }, () => {
-    const winner = getRandomArrayItem(
-      mappedViewers.filter((u) => !pastWinners.has(u.login) && !forfeitSet.has(u.login))
-    )
-    if (!winner) return
-    pastWinners.add(winner.login)
-    announceWinner({
-      giveawayType: 'instant',
-      chatClient,
-      channelInfo,
-      settings,
-      winner: winner.login,
-      discordSettings,
-    })
-    return winner.login
-      ? {
-          login: winner.login,
-          wasSubscriber: winner.isSubscriber,
-          wasFollower: winner.follows,
-          platform: winner.platform,
-        }
-      : undefined
-  }).filter(Boolean) as { login: string; wasSubscriber: boolean; wasFollower: boolean }[]
-  return {
-    winners,
-    giveawayStats: giveawayUserStats.data(),
-  }
-}
+// export async function getInstantGiveaway(
+//   chatClient: Chat,
+//   channelInfo: ChannelInfo,
+//   settings: Settings,
+//   discordSettings: DiscordSettings,
+//   forfeits: string[]
+// ): Promise<GiveawayInformation> {
+//   const forfeitSet = new Set([...forfeits])
+//   const giveawayUserStats = prepareStats()
+//   console.info('[giveaway][instant][start]')
+//   let viewers = await getViewers(channelInfo)
+//   viewers = viewers.filter((u) => !settings.blocklist.map((b) => b.trim()).includes(u))
+//   console.info({ viewers: viewers.length })
+//   const [followersList, subsList] = await Promise.all([getFollowers(channelInfo), getSubs(channelInfo)])
+//   giveawayUserStats.users = viewers.length
+//   giveawayUserStats.entries = viewers.length
+//   let mappedViewers = viewers.map((v) => ({
+//     login: v,
+//     follows: followersList!.has(v),
+//     isSubscriber: subsList!.has(v),
+//     source: 'instant',
+//     platform: 'twitch',
+//   }))
+//   let filteredFollowers = mappedViewers.filter((v) => v.follows)
+//   let filteredSubs = mappedViewers.filter((v) => v.isSubscriber)
+//   giveawayUserStats.followers = filteredFollowers.length
+//   giveawayUserStats.subs = filteredSubs.length
+//   if (settings.followersOnly) {
+//     mappedViewers = filteredFollowers
+//   }
+//   viewers = mappedViewers
+//     .flatMap((c) => {
+//       if (c.isSubscriber) {
+//         return Array.from({ length: settings.subLuck }, () => c)
+//       }
+//       return c
+//     })
+//     .map((i) => i.login)
+//   giveawayUserStats.finalEntries = viewers.length
+//   console.info('[giveaway][instant]', giveawayUserStats)
+//   giveawayUserStats.toast()
+//   console.info('[giveaway][instant][end]')
+//   const winners = Array.from({ length: settings.numberOfWinners }, () => {
+//     const winner = getRandomArrayItem(
+//       mappedViewers.filter((u) => !pastWinners.has(u.login) && !forfeitSet.has(u.login))
+//     )
+//     if (!winner) return
+//     pastWinners.add(winner.login)
+//     announceWinner({
+//       giveawayType: 'instant',
+//       chatClient,
+//       channelInfo,
+//       settings,
+//       winner: winner.login,
+//       discordSettings,
+//     })
+//     return winner.login
+//       ? {
+//           login: winner.login,
+//           wasSubscriber: winner.isSubscriber,
+//           wasFollower: winner.follows,
+//           platform: winner.platform,
+//         }
+//       : undefined
+//   }).filter(Boolean) as { login: string; wasSubscriber: boolean; wasFollower: boolean }[]
+//   return {
+//     winners,
+//     giveawayStats: giveawayUserStats.data(),
+//   }
+// }
 
 export interface AnnounceArgs {
   chatClient: Chat

@@ -1,8 +1,7 @@
 export const SPECIAL_COMMAND_TEXT = {
-  $gw2_account$: 'your Guild Wars 2 account name XXXX.1234',
-  $steam_friend$: 'your 8 digit Steam friend code',
-  $gw2_or_steam$: 'either your GW2 account name or Steam friend code',
-  $gw2_or_steam_or_paypal$: 'either your GW2 account name or Steam friend code or the word paypal',
+  $gw2_account$: '[GW2 account name.####]',
+  $steam_friend$: '[8 digit Steam friend code]',
+  $gw2_or_steam$: '[GW2 account name or Steam friend code]',
 }
 
 export interface StatusProps {

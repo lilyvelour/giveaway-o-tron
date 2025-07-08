@@ -3,12 +3,10 @@ import { Toaster } from 'react-hot-toast'
 
 import '../styles/globals.css'
 import Head from 'next/head'
-import useFathom from '~/components/hooks/useFathom'
 import { DefaultSeo } from 'next-seo'
 import SEO from '~/next-seo.config'
 
 export default function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
-  const fathom = useFathom()
   return (
     <>
       <Head>
@@ -17,7 +15,7 @@ export default function MyApp({ Component, pageProps: { session, ...pageProps } 
         <meta name="theme-color" content="#1e293b" />
       </Head>
       <DefaultSeo {...SEO} />
-      <Component {...pageProps} fathom={fathom} session={session} suppressHydrationWarning />
+      <Component {...pageProps} session={session} suppressHydrationWarning />
       <Toaster />
     </>
   )

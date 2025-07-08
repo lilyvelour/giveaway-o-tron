@@ -62,7 +62,7 @@ export const safeYoutubeFetch: typeof fetch = async (input, init) => {
 }
 
 const YOUTUBE_URLS = {
-  members: 'https://www.googleapis.com/youtube/v3/members?part=snippet&maxResults=1000&mode=all_current',
+  // members: 'https://www.googleapis.com/youtube/v3/members?part=snippet&maxResults=1000&mode=all_current',
   subscribers:
     'https://www.googleapis.com/youtube/v3/subscriptions?part=subscriberSnippet&maxResults=50&myRecentSubscribers=true',
 }
@@ -107,35 +107,37 @@ export async function getYoutubeMembers(
   youtubeSession?: Exclude<ReturnType<typeof getSession>, undefined>['youtube'],
   maxTime?: number
 ) {
-  let session = youtubeSession
-  if (!session) {
-    session = getSession()?.youtube
-  }
-  if (!session) {
-    console.warn(`[youtube][members][cache] No session, exiting`)
-    return youtubeMembersCache
-  }
-  const fakeChannelInfo: ChannelInfo = {
-    token: youtubeSession?.accessToken,
-    refreshToken: youtubeSession?.refreshToken,
-    login: youtubeSession?.username,
-    userId: youtubeSession?.id,
-  }
-  const cacherPromise = genericCacher(
-    'youtube',
-    'subs',
-    CACHE_KEY.dumbsubs,
-    fakeChannelInfo,
-    'members',
-    youtubeMembersCache,
-    (i) => ({ id: i?.snippet?.memberDetails?.displayName, login: i?.snippet?.memberDetails?.channelId }),
-    getYoutubeItems,
-    60_000
-  )
-  if (maxTime) {
-    return Promise.race([cacherPromise, racedCache(maxTime, youtubeMembersCache)])
-  }
-  return cacherPromise
+  return youtubeMembersCache
+
+  // let session = youtubeSession
+  // if (!session) {
+  //   session = getSession()?.youtube
+  // }
+  // if (!session) {
+  //   console.warn(`[youtube][members][cache] No session, exiting`)
+  //   return youtubeMembersCache
+  // }
+  // const fakeChannelInfo: ChannelInfo = {
+  //   token: youtubeSession?.accessToken,
+  //   refreshToken: youtubeSession?.refreshToken,
+  //   login: youtubeSession?.username,
+  //   userId: youtubeSession?.id,
+  // }
+  // const cacherPromise = genericCacher(
+  //   'youtube',
+  //   'subs',
+  //   CACHE_KEY.dumbsubs,
+  //   fakeChannelInfo,
+  //   'members',
+  //   youtubeMembersCache,
+  //   (i) => ({ id: i?.snippet?.memberDetails?.displayName, login: i?.snippet?.memberDetails?.channelId }),
+  //   getYoutubeItems,
+  //   60_000
+  // )
+  // if (maxTime) {
+  //   return Promise.race([cacherPromise, racedCache(maxTime, youtubeMembersCache)])
+  // }
+  // return cacherPromise
 }
 
 let youtubeSubscribersCache = new Map()

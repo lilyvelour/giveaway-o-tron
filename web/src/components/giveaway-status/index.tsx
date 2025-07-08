@@ -2,14 +2,12 @@
 import * as React from 'react'
 import { useRouter } from 'next/router'
 import { io } from 'socket.io-client'
-import { getRelayURI } from '../util'
 import { GW2Status, CustomStatus } from './style'
 import { SPECIAL_COMMAND_TEXT } from './style/shared'
 
 export default function GW2Alerts() {
   const router = useRouter()
   const channel = router.query.channel
-  const relayVersion = router.query.rv
 
   const [status, setStatus] = React.useState<{
     status?: string
@@ -62,7 +60,7 @@ export default function GW2Alerts() {
   )
   React.useEffect(() => {
     if (!channel) return
-    const socket = io(getRelayURI(relayVersion), {
+    const socket = io(process.env.NEXT_PUBLIC_RELAY_URI || '', {
       query: { channel },
       transports: ['websocket', 'polling'],
     })
@@ -93,14 +91,14 @@ export default function GW2Alerts() {
         }
       }
     }
-  }, [handleEvent, relayVersion, channel])
+  }, [handleEvent, channel])
   console.info('[status]', status)
   const isSpecialCommand = status.command?.split(' ').some((c) => !!SPECIAL_COMMAND_TEXT[c])
   const msgQuote = isSpecialCommand ? `` : `"`
   const props = {
     title:
       status.status === 'start'
-        ? `${status.followersOnly ? 'Followers g' : 'G'}iveaway open`
+        ? `${status.followersOnly ? 'Follower g' : 'G'}iveaway open!`
         : status.status === 'ended'
         ? 'Good luck!'
         : null,
@@ -113,7 +111,7 @@ export default function GW2Alerts() {
               .join(' ')}${msgQuote} for a chance to win!`
           : "Make sure to send a message in chat, there's no command!"
         : status.status === 'ended'
-        ? 'The giveaway is closed'
+        ? 'The giveaway is closed!'
         : null,
     status: status.status,
     command: status.command,

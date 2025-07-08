@@ -14,7 +14,7 @@ export default function Header({ fathom }: { fathom: any }) {
         <Link className={btnClass} href="/app" onClick={() => fathom.trackGoal('TNUCDFRF', 0)} prefetch={false}>
           <FaDoorOpen /> Login
         </Link>
-        <a className={`${btnClass} text-2xl px-4`} href="https://github.com/maael/giveaway-o-tron">
+        <a className={`${btnClass} text-2xl px-4`} href="https://github.com/lilyvelour/giveaway-o-tron">
           <FaGithub />
         </a>
       </div>

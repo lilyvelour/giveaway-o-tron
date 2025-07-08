@@ -1,6 +1,6 @@
 import { io } from 'socket.io-client'
 
-const socket = io('wss://mael-relay.onrender.com/giveaway-o-tron', {
+const socket = io(process.env.NEXT_PUBLIC_RELAY_URI || '', {
   transports: ['websocket', 'polling'],
 })
 

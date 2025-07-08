@@ -21,7 +21,7 @@ export default function Discord({
           className="bg-purple-600 text-white py-1 px-5 rounded-md transform hover:scale-105 transition-transform shadow-md flex flex-row items-center gap-2 justify-center text-xl mt-2"
           onClick={() => {
             window.open(
-              'https://discord.com/api/oauth2/authorize?client_id=1012331926301974558&permissions=150528&scope=bot',
+              `https://discord.com/api/oauth2/authorize?client_id=${process.env.NEXT_PUBLIC_DISCORD_ID}&permissions=150528&scope=bot`,
               '_blank'
             )
           }}

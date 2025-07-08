@@ -18,10 +18,10 @@ export default function Obs({
   setSettings: React.Dispatch<React.SetStateAction<Settings>>
 }) {
   const [copiedAlertURL, copyAlertURL] = useCopyToClipboard(
-    `https://giveaway-o-tron.vercel.app/alerts/gw2?channel=${channelInfo.userId}&rv=2`
+    `${process.env.NEXT_PUBLIC_BROWSER_SOURCE_ROOT_URL}/alerts/gw2?channel=${channelInfo.userId}`
   )
   const [copiedStatusURL, copyStatusURL] = useCopyToClipboard(
-    `https://giveaway-o-tron.vercel.app/alerts/status?channel=${channelInfo.userId}&rv=2`
+    `${process.env.NEXT_PUBLIC_BROWSER_SOURCE_ROOT_URL}/alerts/status?channel=${channelInfo.userId}`
   )
   const { loading: themesLoading, themes, options: themeOptions } = useThemes()
   const selectedThemeOption = themeOptions.find((i) => (settings.alertTheme || defaultSettings.alertTheme) === i.value)
@@ -190,19 +190,37 @@ export default function Obs({
 function CustomPreview({ imageUrl }: { imageUrl?: string }) {
   return (
     <div className="flex-1 flex flex-col justify-center items-center gap-2 text-center">
-      {imageUrl ? (
-        <div
-          className="flex-1 flex justify-center items-center relative w-full overflow-hidden"
-          style={{
-            backgroundImage: `url(${imageUrl})`,
-            backgroundSize: 'contain',
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'center',
-          }}
-        />
-      ) : null}
-      <div className="flex-0 flex justify-center items-center text-2xl uppercase">@name won!</div>
+      {imageUrl ? <img src={imageUrl} className="h-56" /> : null}
+      <div style={{ position: 'relative', top: '-14.4vh', left: '4vw' }}>
+        <div className="text-6xl font-semibold my-3">@name won!</div>
+      </div>
+      <div
+        style={{
+          position: 'relative',
+          top: '-8vh',
+          left: '1.6%',
+          maxWidth: '50%',
+          minHeight: '50%',
+          overflow: 'auto',
+        }}
+      >
+        <div className="text-5xl font-semibold">Congratulations!</div>
+      </div>
     </div>
+    // <div className="flex-1 flex flex-col justify-center items-center gap-2 text-center">
+    //   {imageUrl ? (
+    //     <div
+    //       className="flex-1 flex justify-center items-center relative w-full overflow-hidden"
+    //       style={{
+    //         backgroundImage: `url(${imageUrl})`,
+    //         backgroundSize: 'contain',
+    //         backgroundRepeat: 'no-repeat',
+    //         backgroundPosition: 'center',
+    //       }}
+    //     />
+    //   ) : null}
+    //   <div className="flex-0 flex justify-center items-center text-2xl uppercase">@name won!</div>
+    // </div>
   )
 }
 

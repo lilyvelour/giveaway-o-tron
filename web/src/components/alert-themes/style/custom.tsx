@@ -12,12 +12,26 @@ export default function CustomAlert({
 }) {
   return (
     <div
-      className={`flex flex-col justify-center items-center bg-transparent relative fill-mode-both ${
+      className={`flex flex-col justify-center items-center bg-transparent relative fill-mode-both text-white font-bold text-center ${
         visible ? 'animate-in fade-in' : 'animate-out fade-out'
       }`}
     >
-      <img src={imageUrl} />
-      <div className="text-4xl mt-5 uppercase text-white font-bold">{winner} won!</div>
+      {imageUrl ? <img src={imageUrl} className="h-56" /> : null}
+      <div style={{ position: 'relative', top: '-14.4vh', left: '4vw' }}>
+        <div className="text-6xl font-semibold my-3">{winner} won!</div>
+      </div>
+      <div
+        style={{
+          position: 'relative',
+          top: '-8vh',
+          left: '1.6vw',
+          maxWidth: '50vw',
+          minHeight: '50vh',
+          overflow: 'auto',
+        }}
+      >
+        <div className="text-5xl font-semibold">Congratulations!</div>
+      </div>
     </div>
   )
 }

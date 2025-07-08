@@ -26,7 +26,6 @@ import ObsScreen from '~/components/screens/Obs'
 import { useYoutubeChat } from '~/components/hooks/useYoutubeChat'
 import twitchCache from '~/utils/twitchCaches'
 import youtubeCache, { YOUTUBE_STORAGE_KEYS } from '~/utils/google'
-import * as Sentry from '@sentry/nextjs'
 
 if (typeof window !== undefined) {
   void twitchCache()
@@ -93,7 +92,6 @@ function InnerApp() {
   )
   useAuthEvents(updateClientInfo)
   React.useEffect(() => {
-    Sentry.setUser({ username: channelInfo.login })
     if (channelInfo.login) {
       if (settings.autoConnect) setClient((cl) => (cl ? cl : chat(channelInfo)))
     }

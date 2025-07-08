@@ -16,9 +16,8 @@ import format from 'date-fns/formatDistanceStrict'
 import { Howl } from 'howler'
 import Slider, { SliderInner } from './Slider'
 import relay from '../../utils/relay'
-import { DiscordSettings, getDiscordColour, Settings } from '../../utils'
+import { DiscordSettings, getDiscordColour, resetPastWinners, Settings } from '../../utils'
 import { YOUTUBE_STORAGE_KEYS } from '~/utils/google'
-import useFathom from '../hooks/useFathom'
 
 const bell = new Howl({
   src: ['sounds/pleasing-bell.ogg'],
@@ -120,7 +119,6 @@ const Time = React.memo(function Time({
     setChatPaused(true)
     if (timerBell) bell.play()
   }, [channelId, timerBell, discordSettings, duration])
-  const fathom = useFathom()
   return active ? (
     <div className="flex-1 border border-purple-600 rounded-md flex justify-center items-center text-center relative">
       <StableCountdown value={value} onComplete={onComplete} />
@@ -187,6 +185,7 @@ const Time = React.memo(function Time({
         className="bg-purple-600 px-2 py-1 flex-0 select-none cursor-pointer flex flex-row justify-center items-center gap-1 transition-colors hover:bg-purple-700"
         onClick={() => {
           resetChat()
+          resetPastWinners()
           setChatPaused(false)
           setSettings((s) => ({ ...s, timerAlertHidden: false }))
           setActive(true)
@@ -198,7 +197,6 @@ const Time = React.memo(function Time({
           setYoutubeChatDelay(youtubeDelay)
           const disabledDueToTimer =
             duration && discordSettings.giveawayMinTime && duration < discordSettings.giveawayMinTime
-          fathom.trackEvent(`Start giveaway: ${channelId}`)
           relay.emit('event', {
             type: 'timer-start',
             channelId,
@@ -271,16 +269,6 @@ function ChatCommandPicker({ setSettings }: Pick<Props, 'setSettings'>) {
             title="Counts messages that include either a GW2 Account or Steam Friend Code as entries"
           >
             GW2 or Steam
-          </div>
-          <div
-            className="hover:bg-purple-600 px-2"
-            onClick={() => {
-              setSettings((s) => ({ ...s, chatCommand: '$gw2_or_steam_or_paypal$' }))
-              setOpen(false)
-            }}
-            title="Counts messages that include either a GW2 Account or Steam Friend Code or the word paypal as entries"
-          >
-            GW2/Steam/PayPal
           </div>
         </div>
       ) : null}

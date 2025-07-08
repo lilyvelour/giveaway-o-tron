@@ -172,7 +172,7 @@ export default function SettingsScreen({
           <button
             className="text-purple-200 opacity-80 text-xs"
             onClick={() => {
-              window.open(`https://github.com/maael/giveaway-o-tron/releases/v${APP_VERSION}`, '_blank')
+              window.open(`https://github.com/lilyvelour/giveaway-o-tron/releases/v${APP_VERSION}`, '_blank')
             }}
           >
             Version: {APP_VERSION ? `v${APP_VERSION}` : 'Unknown Version'}
