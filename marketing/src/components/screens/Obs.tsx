@@ -192,7 +192,7 @@ function CustomPreview({ imageUrl }: { imageUrl?: string }) {
     <div className="flex-1 flex flex-col justify-center items-center gap-2 text-center">
       {imageUrl ? <img src={imageUrl} className="h-56" /> : null}
       <div style={{ position: 'relative', top: '-14.4vh', left: '4vw' }}>
-        <div className="text-6xl font-semibold my-3">@name won!</div>
+        <div className="text-6xl font-semibold my-3"></div>
       </div>
       <div
         style={{
@@ -219,7 +219,7 @@ function CustomPreview({ imageUrl }: { imageUrl?: string }) {
     //       }}
     //     />
     //   ) : null}
-    //   <div className="flex-0 flex justify-center items-center text-2xl uppercase">@name won!</div>
+    //   <div className="flex-0 flex justify-center items-center text-2xl uppercase"></div>
     // </div>
   )
 }

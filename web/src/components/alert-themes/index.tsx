@@ -46,7 +46,8 @@ export default function GW2Alerts() {
   }, [makeShot])
   const handleEvent = React.useCallback(
     (e: {
-      winner: string
+      winnerName: string
+      prize: string
       channelId: number
       alertDuration: number
       alertTheme: string
@@ -61,9 +62,9 @@ export default function GW2Alerts() {
         toast.custom(
           (t) => {
             return e.alertTheme === 'custom' ? (
-              <CustomAlert winner={e.winner} imageUrl={e.alertCustomImageUrl} visible={t.visible} />
+              <CustomAlert winner={e.winnerName} prize={e.prize} imageUrl={e.alertCustomImageUrl} visible={t.visible} />
             ) : (
-              <Gw2Alert winner={e.winner} visible={t.visible} type={e.alertTheme} />
+              <Gw2Alert winner={e.winnerName} visible={t.visible} type={e.alertTheme} />
             )
           },
           { duration: e.alertDuration || 4000 }

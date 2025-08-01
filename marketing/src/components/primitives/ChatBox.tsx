@@ -228,7 +228,7 @@ export default function ChatBox({
           <div className="text-yellow-600 text-xs">
             {winners.length ? (
               <>
-                {limitedMessages.length} winner message
+                {limitedMessages.length} prize
                 {limitedMessages.length === 1 ? '' : 's'}
               </>
             ) : null}

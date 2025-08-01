@@ -18,14 +18,14 @@ import {
 import chat from '../../chat'
 
 function filterSettings(s: TSettings) {
-  const { subLuck, numberOfWinners, followersOnly, sendMessages, chatCommand, winnerMessage } = s
+  const { subLuck, numberOfWinners, followersOnly, sendMessages, chatCommand, prize } = s
   return {
     subLuck,
     numberOfWinners,
     followersOnly,
     sendMessages,
     chatCommand,
-    winnerMessage,
+    prize,
   }
 }
 
@@ -188,6 +188,7 @@ export type WinnerUser = Partial<{
   platform: 'youtube' | 'twitch'
 }>
 export function Winner({
+  channelInfo,
   winners,
   onClear,
   ...anounceArgs
@@ -218,14 +219,19 @@ export function Winner({
                 'text-2xl absolute right-12 cursor-pointer select-none transform opacity-80 transition-opacity hover:opacity-100 hover:scale-105',
                 { '-mt-4': hasWarning }
               )}
-              onClick={() =>
+              onClick={() => {
                 announceWinner({
+                  channelInfo,
                   ...anounceArgs,
                   giveawayType: winner.source!,
-                  winner: (winner.displayName || winner.username)!,
+                  winner: {
+                    displayName: winner.displayName,
+                    username: winner.username,
+                    platform: winner.platform,
+                  },
                   force: true,
                 })
-              }
+              }}
             />
             <FaTimes
               className={cls(

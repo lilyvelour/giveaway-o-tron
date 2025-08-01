@@ -4,7 +4,7 @@ export interface Settings {
   numberOfWinners: number
   followersOnly: boolean
   chatCommand: string
-  winnerMessage: string
+  prize: string
   sendMessages: boolean
   blocklist: string[]
   autoScroll?: boolean

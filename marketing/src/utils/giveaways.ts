@@ -1,7 +1,7 @@
 import { Chat, ChatItem } from '../chat'
 import { ChannelInfo, DiscordSettings, GiveawayResult, Settings } from './types'
 import { getDiscordColour, getRandomArrayItem, handleChatCommand } from './misc'
-import { getFollowers, getSubs } from './twitch'
+import { getFollowers, getSubs, getTwitchThumbnail } from './twitch'
 import relay from './relay'
 import toast from 'react-hot-toast'
 
@@ -136,7 +136,11 @@ export async function getChatGiveaway(
       chatClient,
       channelInfo,
       settings,
-      winner: winner.username,
+      winner: {
+        displayName: winner.displayName,
+        username: winner.username,
+        platform: winner.source,
+      },
       discordSettings,
     })
     return {
@@ -234,10 +238,17 @@ export interface AnnounceArgs {
   channelInfo: ChannelInfo
   settings: Settings
   discordSettings: DiscordSettings
-  winner: string
+  winner: AnnounceArgsWinner
   force?: boolean
 }
-export function announceWinner({
+
+export interface AnnounceArgsWinner {
+  displayName?: string
+  username?: string
+  platform: 'twitch' | 'youtube' | undefined
+}
+
+export async function announceWinner({
   giveawayType,
   chatClient,
   channelInfo,
@@ -246,18 +257,33 @@ export function announceWinner({
   winner,
   force,
 }: AnnounceArgs) {
+  let winnerName = winner.displayName || winner.username
+  if (!winnerName) return
+  let eventWinnerName = winnerName
+
+  if (winner.platform == 'youtube') {
+    winnerName += ' (YouTube)'
+    eventWinnerName = winnerName
+  } else if (winner.platform == 'twitch') {
+    eventWinnerName += ' (Twitch)'
+  }
+
   if (force !== true && settings.autoAnnounce !== undefined && settings.autoAnnounce === false) return
+
   const discordTimerNotAllowed =
     giveawayType === 'chat' &&
     discordSettings.giveawayMinTime &&
     settings.timerDuration &&
     settings.timerDuration < discordSettings.giveawayMinTime
   const colour = getDiscordColour(discordSettings.messageColour)
+  const image = await getTwitchThumbnail(channelInfo)
   const eventData = {
     type: 'winner',
-    winner,
+    winnerName,
+    prize: settings.prize,
     channelId: channelInfo.userId,
     login: channelInfo.login,
+    image,
     alertDuration: settings.alertDuration,
     alertTheme: settings.alertTheme,
     alertCustomImageUrl: settings.alertCustomImageUrl,
@@ -271,11 +297,14 @@ export function announceWinner({
       : discordSettings.winnerEnabled === undefined
       ? true
       : discordSettings.winnerEnabled,
-    giveawayName: '',
   }
+  relay.emit('event', { type: 'timer-hide', hidden: true, channelId: channelInfo.userId, login: channelInfo.login })
   console.info('[relay][event]', eventData)
   relay.emit('event', eventData)
-  if (settings.sendMessages && !winner?.includes('|$$|')) {
-    chatClient?.say(channelInfo.login!, settings.winnerMessage.replace('@name', `@${winner}`))
+  if (settings.sendMessages && !winner?.username?.includes('|$$|')) {
+    chatClient?.say(
+      channelInfo.login!,
+      `${winner.platform == 'twitch' ? `@${winnerName}` : winnerName} won ${settings.prize || 'the giveaway'}!`
+    )
   }
 }

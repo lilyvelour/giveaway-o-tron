@@ -12,6 +12,7 @@ export default function GW2Alerts() {
   const [status, setStatus] = React.useState<{
     status?: string
     command?: string
+    prize?: string
     goalTs?: number
     followersOnly?: boolean
     theme?: string
@@ -22,6 +23,7 @@ export default function GW2Alerts() {
   const handleEvent = React.useCallback(
     (e: {
       channelId: number
+      prize: string
       alertDuration: number
       alertTheme: string
       type?: string
@@ -38,6 +40,7 @@ export default function GW2Alerts() {
         setStatus({
           status: 'start',
           command: e.chatCommand ? e.chatCommand.trim() : e.chatCommand,
+          prize: e.prize ? ` ${e.prize}` : '',
           goalTs: e.ts && e.duration ? Number(new Date(e.ts)) + e.duration : undefined,
           followersOnly: !!e.followersOnly,
           theme: e.alertTheme,
@@ -105,13 +108,13 @@ export default function GW2Alerts() {
     body:
       status.status === 'start'
         ? status.command
-          ? `Message with ${msgQuote}${status.command
+          ? `Type ${msgQuote}${status.command
               .split(' ')
               .map((c) => SPECIAL_COMMAND_TEXT[c] || c)
-              .join(' ')}${msgQuote} for a chance to win!`
-          : "Make sure to send a message in chat, there's no command!"
+              .join(' ')}${msgQuote} for a chance to win${status.prize}!`
+          : "Send a message in chat, there's no command!"
         : status.status === 'ended'
-        ? 'The giveaway is closed!'
+        ? ''
         : null,
     status: status.status,
     command: status.command,

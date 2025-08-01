@@ -155,18 +155,26 @@ export default function Discord({
           </div>
           <div className="flex flex-row gap-2">
             <div className="w-1/5 flex justify-end items-start">
-              <em className="not-italic px-3 py-1 bg-gray-700 text-purple-400 rounded-md">$prize</em>
+              <em className="not-italic px-3 py-1 bg-gray-700 text-purple-400 rounded-md">$message</em>
             </div>
             <p className="flex flex-row items-center">
-              Will be replaced by the giveaway name if there is one (title and body)
+              Will be replaced by the giveaway message if there is one (body only)
             </p>
           </div>
           <div className="flex flex-row gap-2">
             <div className="w-1/5 flex justify-end items-start">
-              <em className="not-italic px-3 py-1 bg-gray-700 text-purple-400 rounded-md">[any text]($link)</em>
+              <em className="not-italic px-3 py-1 bg-gray-700 text-purple-400 rounded-md">[any text]($twitch)</em>
             </div>
             <p className="flex flex-row items-center">
               Will be replaced by the text between the square brackets, linking to your Twitch (body only)
+            </p>
+          </div>
+          <div className="flex flex-row gap-2">
+            <div className="w-1/5 flex justify-end items-start">
+              <em className="not-italic px-3 py-1 bg-gray-700 text-purple-400 rounded-md">[any text]($youtube)</em>
+            </div>
+            <p className="flex flex-row items-center">
+              Will be replaced by the text between the square brackets, linking to your YouTube (body only)
             </p>
           </div>
         </div>

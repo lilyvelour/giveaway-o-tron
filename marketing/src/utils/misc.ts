@@ -75,7 +75,7 @@ export const defaultSettings: Required<Settings> = {
   numberOfWinners: 1,
   followersOnly: true,
   chatCommand: '',
-  winnerMessage: 'PartyHat @name won!',
+  prize: 'the giveaway',
   sendMessages: false,
   blocklist: [
     'streamelements',

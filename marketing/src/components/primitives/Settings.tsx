@@ -16,14 +16,22 @@ import format from 'date-fns/formatDistanceStrict'
 import { Howl } from 'howler'
 import Slider, { SliderInner } from './Slider'
 import relay from '../../utils/relay'
-import { DiscordSettings, getDiscordColour, resetPastWinners, Settings } from '../../utils'
+import {
+  ChannelInfo,
+  DiscordSettings,
+  getDiscordColour,
+  getTwitchThumbnail,
+  resetPastWinners,
+  Settings,
+} from '../../utils'
 import { YOUTUBE_STORAGE_KEYS } from '~/utils/google'
+import chat from '~/chat'
 
 const bell = new Howl({
   src: ['sounds/pleasing-bell.ogg'],
 })
 
-const countDownRenderer = ({ hours, minutes, seconds, completed }) => {
+const countDownRenderer = ({ minutes, seconds, completed }) => {
   if (completed) {
     // Render a complete state
     return <div className="animate-pulse">Finished! Chat is paused, do the giveaway!</div>
@@ -31,7 +39,7 @@ const countDownRenderer = ({ hours, minutes, seconds, completed }) => {
     // Render a countdown
     return (
       <span>
-        {zeroPad(hours, 2)} : {zeroPad(minutes, 2)} : {zeroPad(seconds, 2)}
+        {zeroPad(minutes, 2)} : {zeroPad(seconds, 2)}
       </span>
     )
   }
@@ -44,7 +52,9 @@ interface Props {
   setSettings: Dispatch<SetStateAction<Settings>>
   setChatPaused: Dispatch<SetStateAction<Boolean>>
   resetChat: () => void
+  channelInfo?: ChannelInfo
   channelId?: string
+  login?: string
   discordSettings: DiscordSettings
   setYoutubeChatDelay: Dispatch<SetStateAction<number | null>>
   getYoutubeChat: () => Promise<void>
@@ -67,8 +77,9 @@ const Time = React.memo(function Time({
   setChatPaused,
   resetChat,
   chatCommand,
-  channelId,
+  channelInfo,
   timerBell,
+  prize,
   setSettings,
   discordSettings,
   duration,
@@ -83,42 +94,66 @@ const Time = React.memo(function Time({
   timerBell: Props['settings']['timerBell']
   duration: Props['settings']['timerDuration']
   alertHidden: Props['settings']['timerAlertHidden']
+  prize: Props['settings']['prize']
   setSettings: Props['setSettings']
 } & Pick<
   Props,
-  'channelId' | 'setChatPaused' | 'resetChat' | 'discordSettings' | 'setYoutubeChatDelay' | 'getYoutubeChat'
+  | 'channelInfo'
+  | 'channelId'
+  | 'login'
+  | 'setChatPaused'
+  | 'resetChat'
+  | 'discordSettings'
+  | 'setYoutubeChatDelay'
+  | 'getYoutubeChat'
 >) {
+  if (!channelInfo) return
+
   const [active, setActive] = React.useState(false)
+  const [timerFinished, setTimerFinished] = React.useState(false)
+
   const value = duration || ONE_MIN
+
   const onComplete = React.useCallback(() => {
+    setTimerFinished(true)
+
+    window.onbeforeunload = () => {}
+
     void getYoutubeChat().then(() => {
       console.info('[youtube] Clearing timer')
       localStorage.removeItem(YOUTUBE_STORAGE_KEYS.TimerStart)
     })
     toast.success('Timer finished! Chat paused, do a giveaway...', { position: 'bottom-center' })
     setYoutubeChatDelay(null)
-    const disabledDueToTimer = duration && discordSettings.giveawayMinTime && duration < discordSettings.giveawayMinTime
-    relay.emit('event', {
-      type: 'timer-end',
-      channelId,
-      ts: new Date().toISOString(),
-      discordGuildId: discordSettings.guildId,
-      discordChannelId: discordSettings.channelId,
-      discordColour: getDiscordColour(discordSettings.messageColour),
-      discordTitle: discordSettings.endTitle,
-      discordBody: discordSettings.endBody,
-      discordEnabled: disabledDueToTimer
-        ? false
-        : discordSettings.endEnabled === undefined
-        ? true
-        : discordSettings.endEnabled,
-      alertTheme,
-      alertCustomImageUrl,
-      followersOnly,
+    const discordDisabledDueToTimer =
+      duration && discordSettings.giveawayMinTime && duration < discordSettings.giveawayMinTime
+
+    getTwitchThumbnail(channelInfo).then((image) => {
+      relay.emit('event', {
+        type: 'timer-end',
+        channelId: channelInfo.userId,
+        login: channelInfo.login,
+        prize,
+        image,
+        ts: new Date().toISOString(),
+        discordGuildId: discordSettings.guildId,
+        discordChannelId: discordSettings.channelId,
+        discordColour: getDiscordColour(discordSettings.messageColour),
+        discordTitle: discordSettings.endTitle,
+        discordBody: discordSettings.endBody,
+        discordEnabled: discordDisabledDueToTimer
+          ? false
+          : discordSettings.endEnabled === undefined
+          ? true
+          : discordSettings.endEnabled,
+        alertTheme,
+        alertCustomImageUrl,
+        followersOnly,
+      })
+      setChatPaused(true)
+      if (timerBell) bell.play()
     })
-    setChatPaused(true)
-    if (timerBell) bell.play()
-  }, [channelId, timerBell, discordSettings, duration])
+  }, [channelInfo.userId, timerBell, discordSettings, duration])
   return active ? (
     <div className="flex-1 border border-purple-600 rounded-md flex justify-center items-center text-center relative">
       <StableCountdown value={value} onComplete={onComplete} />
@@ -127,7 +162,12 @@ const Time = React.memo(function Time({
           <FaEye
             onClick={() => {
               setSettings((s) => ({ ...s, timerAlertHidden: !s.timerAlertHidden }))
-              relay.emit('event', { type: 'timer-hide', hidden: false, channelId })
+              relay.emit('event', {
+                type: 'timer-hide',
+                hidden: false,
+                channelId: channelInfo.userId,
+                login: channelInfo.login,
+              })
             }}
             title="Show the timer alert"
           />
@@ -135,7 +175,12 @@ const Time = React.memo(function Time({
           <FaEyeSlash
             onClick={() => {
               setSettings((s) => ({ ...s, timerAlertHidden: !s.timerAlertHidden }))
-              relay.emit('event', { type: 'timer-hide', hidden: true, channelId })
+              relay.emit('event', {
+                type: 'timer-hide',
+                hidden: true,
+                channelId: channelInfo.userId,
+                login: channelInfo.login,
+              })
             }}
             title="Hide the timer alert"
           />
@@ -143,13 +188,40 @@ const Time = React.memo(function Time({
       </div>
       <FaTimes
         className="absolute right-3 top-2 text-red-500 select-none cursor-pointer"
-        onClick={() => {
+        onClick={async () => {
+          if (!channelInfo) return
+
+          window.onbeforeunload = () => {}
+
+          const image = await getTwitchThumbnail(channelInfo)
+
           setActive(false)
           setYoutubeChatDelay(null)
           console.info('[youtube] Clearing timer')
           localStorage.removeItem(YOUTUBE_STORAGE_KEYS.TimerStart)
           setChatPaused(false)
-          relay.emit('event', { type: 'timer-cancel', channelId })
+          const discordDisabledDueToTimer =
+            duration && discordSettings.giveawayMinTime && duration < discordSettings.giveawayMinTime
+
+          relay.emit('event', {
+            type: 'timer-cancel',
+            channelId: channelInfo.userId,
+            login: channelInfo.login,
+            image,
+            prize,
+            discordGuildId: discordSettings.guildId,
+            discordChannelId: discordSettings.channelId,
+            discordColour: getDiscordColour(discordSettings.messageColour),
+            discordTitle: discordSettings.endTitle,
+            discordBody: discordSettings.endBody,
+            discordEnabled: timerFinished
+              ? false
+              : discordDisabledDueToTimer
+              ? false
+              : discordSettings.endEnabled === undefined
+              ? true
+              : discordSettings.endEnabled,
+          })
         }}
         title="Cancel the timer"
       />
@@ -183,7 +255,10 @@ const Time = React.memo(function Time({
       </button>
       <button
         className="bg-purple-600 px-2 py-1 flex-0 select-none cursor-pointer flex flex-row justify-center items-center gap-1 transition-colors hover:bg-purple-700"
-        onClick={() => {
+        onClick={async () => {
+          if (!channelInfo) return
+
+          const image = await getTwitchThumbnail(channelInfo)
           resetChat()
           resetPastWinners()
           setChatPaused(false)
@@ -195,11 +270,14 @@ const Time = React.memo(function Time({
           console.info('[youtube] Setting timer', timerStart)
           localStorage.setItem(YOUTUBE_STORAGE_KEYS.TimerStart, timerStart)
           setYoutubeChatDelay(youtubeDelay)
-          const disabledDueToTimer =
+          const discordDisabledDueToTimer =
             duration && discordSettings.giveawayMinTime && duration < discordSettings.giveawayMinTime
           relay.emit('event', {
             type: 'timer-start',
-            channelId,
+            channelId: channelInfo.userId,
+            login: channelInfo.login,
+            prize,
+            image,
             ts: timerStart,
             duration,
             chatCommand: chatCommand?.trim(),
@@ -208,7 +286,7 @@ const Time = React.memo(function Time({
             discordColour: getDiscordColour(discordSettings.messageColour),
             discordTitle: discordSettings.startTitle,
             discordBody: discordSettings.startBody,
-            discordEnabled: disabledDueToTimer
+            discordEnabled: discordDisabledDueToTimer
               ? false
               : discordSettings.startEnabled === undefined
               ? true
@@ -218,7 +296,25 @@ const Time = React.memo(function Time({
             followersOnly,
           })
           window.onbeforeunload = () => {
-            relay.emit('event', { type: 'timer-cancel', channelId })
+            relay.emit('event', {
+              type: 'timer-cancel',
+              channelId: channelInfo.userId,
+              login: channelInfo.login,
+              image,
+              prize,
+              discordGuildId: discordSettings.guildId,
+              discordChannelId: discordSettings.channelId,
+              discordColour: getDiscordColour(discordSettings.messageColour),
+              discordTitle: discordSettings.endTitle,
+              discordBody: discordSettings.endBody,
+              discordEnabled: timerFinished
+                ? false
+                : discordDisabledDueToTimer
+                ? false
+                : discordSettings.endEnabled === undefined
+                ? true
+                : discordSettings.endEnabled,
+            })
             console.info('[youtube] Clearing timer')
             localStorage.removeItem(YOUTUBE_STORAGE_KEYS.TimerStart)
           }
@@ -277,7 +373,9 @@ function ChatCommandPicker({ setSettings }: Pick<Props, 'setSettings'>) {
 }
 
 export default function SettingsComponent({
+  channelInfo,
   channelId,
+  login,
   settings,
   setSettings,
   setChatPaused,
@@ -294,13 +392,13 @@ export default function SettingsComponent({
             className="flex-0 bg-purple-600 px-2 py-1 rounded-l-md"
             title="This will be sent to chat by your account to tell winners, if Send Message is enabled below"
           >
-            Winner Message
+            Prize
           </div>
           <input
             className="bg-gray-700 px-2 py-1 rounded-r-md border-b border-purple-600 flex-1"
-            placeholder="Winner Message..."
-            value={settings.winnerMessage}
-            onChange={(e) => setSettings((s) => ({ ...s, winnerMessage: e.target.value }))}
+            placeholder="Name of the prize..."
+            value={settings.prize}
+            onChange={(e) => setSettings((s) => ({ ...s, prize: e.target.value }))}
             title="Chat command to enter - leave empty for none"
           />
         </div>
@@ -354,7 +452,10 @@ export default function SettingsComponent({
         <Time
           setChatPaused={setChatPaused}
           resetChat={() => resetChat()}
+          channelInfo={channelInfo}
           channelId={channelId}
+          login={login}
+          prize={settings.prize}
           chatCommand={settings.chatCommand}
           timerBell={settings.timerBell}
           setSettings={setSettings}

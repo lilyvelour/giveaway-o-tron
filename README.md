@@ -15,8 +15,7 @@ Windows program and a website to allow Twitch giveaways with multiple options.
 - Two types of giveaways
   - Viewers Instant Giveaway - get a list of viewers and select one, even lurkers
   - Active Chatters Giveaway - selects a viewer who has actively chatted, optionally with a specific command included
-- Custom winner message to be posted after the Giveaway
-  - Embed the viewer's name with `@name` where you want it to appear
+- Custom prize name
 - Custom sub luck increases
 - Do a draw of 1-10 winners at a time
 - For chatters giveaways - set a time for the chat to be paused after, allowing you to cut off who can enter while you refine and do the giveaway

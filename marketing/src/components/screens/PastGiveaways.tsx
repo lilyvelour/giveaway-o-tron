@@ -132,7 +132,7 @@ export default function PastGiveaways({
                 />
               </div>
               <div className="grid col-span-4">
-                <SettingItem label="Winner Message" value={giveaway.settings.winnerMessage.toString()} />
+                <SettingItem label="Prize" value={giveaway.settings.prize.toString()} />
               </div>
             </div>
           </div>

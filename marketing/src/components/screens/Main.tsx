@@ -97,7 +97,7 @@ export default function MainScreen({
         />
       </div>
       <Settings
-        channelId={channelInfo.userId}
+        channelInfo={channelInfo}
         settings={settings}
         setSettings={setSettings}
         setChatPaused={setChatPaused}

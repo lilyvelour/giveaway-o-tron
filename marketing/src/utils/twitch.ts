@@ -74,3 +74,11 @@ export async function getSubs(channelInfo: ChannelInfo) {
 async function getTwitchItems(channelInfo: ChannelInfo, url: string, cursor: string) {
   return callTwitchApi(channelInfo, `${url}${channelInfo.userId}&first=100&after=${cursor}`).then((r) => r.json())
 }
+
+export function getTwitchThumbnail(channelInfo: ChannelInfo): Promise<string> {
+  return callTwitchApi(channelInfo, `streams?user_id=${channelInfo.userId}`)
+    .then((r) => r.json())
+    .then((j) =>
+      j?.data?.length > 0 ? j.data[0].thumbnail_url?.replace('{width}x{height}', '1920x1080') || null : null
+    )
+}

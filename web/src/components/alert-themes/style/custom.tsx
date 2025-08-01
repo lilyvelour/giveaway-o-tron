@@ -3,11 +3,13 @@ import * as React from 'react'
 
 export default function CustomAlert({
   winner,
+  prize,
   imageUrl,
   visible,
 }: {
   imageUrl?: string
   winner: string
+  prize: string
   visible: boolean
 }) {
   return (
@@ -30,7 +32,7 @@ export default function CustomAlert({
           overflow: 'auto',
         }}
       >
-        <div className="text-5xl font-semibold">Congratulations!</div>
+        <div className="text-5xl font-semibold">🏆 {prize}</div>
       </div>
     </div>
   )
